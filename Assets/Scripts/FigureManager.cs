@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class FigureManager : MonoBehaviour
 {
@@ -14,8 +15,16 @@ public class FigureManager : MonoBehaviour
         }
     }
 
-    public Sprite GetRandomFigure()
+    public Tuple<int, Sprite> GetRandomFigure()
     {
-        return figureSprites[Random.Range(0, figureSprites.Length)];
+        int ind = UnityEngine.Random.Range(0, figureSprites.Length);
+        Sprite sprite = figureSprites[ind];
+
+        return Tuple.Create(ind, sprite);
+    }
+
+    public Sprite GetFigure(int figureInd)
+    {
+        return figureSprites[figureInd];
     }
 }

@@ -1,4 +1,6 @@
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public class Field : MonoBehaviour
 {
@@ -13,6 +15,13 @@ public class Field : MonoBehaviour
     {
         tr = GetComponent<Transform>();
         CreateField();
+
+        List<Tile> matchedTiles = GetMatches();
+        while (matchedTiles.Count != 0)
+        {
+            RemoveMatches(matchedTiles);
+            matchedTiles = GetMatches();
+        }
     }
 
     private void CreateField()
@@ -36,8 +45,80 @@ public class Field : MonoBehaviour
                 Vector2 pos = new Vector2(x0 + x * (tileSize + gapSize), y0 - y * (tileSize + gapSize));
 
                 Tile tile = Instantiate(tilePref, pos, Quaternion.identity, tilesStorage);
+                tile.SetValues(x, y);
                 tiles[y, x] = tile;
             }
         }
     }
+
+    private List<Tile> GetMatches()
+    {
+        List<Tile> matchedTiles = new List<Tile>();
+
+        for (int y = 0; y < fieldSize; ++y)
+        {
+            for (int x = 0; x < fieldSize; ++x)
+            {
+                if (IsMatchedTile(tiles[y, x]))
+                {
+                    matchedTiles.Add(tiles[y, x]);
+                }
+            }
+        }
+
+        return matchedTiles;
+    }
+
+    private void RemoveMatches(List<Tile> matchedTiles)
+    {
+        foreach (Tile tile in matchedTiles)
+        {
+            for (int i = tile.Y; i > 0; --i)
+            {
+                tiles[i, tile.X].SetFigure(tiles[i - 1, tile.X].FigureInd);
+            }
+
+            tiles[0, tile.X].SetFigure();
+        }
+    }
+
+    private bool IsMatchedTile(Tile tile)
+    {
+        int horizontalCnt = 1;
+        int vertiaclCnt = 1;
+
+        // Count number of right figures
+        for (int i = tile.X + 1; i < fieldSize; ++i)
+        {
+            if (tiles[tile.Y, i] != tile) break;
+
+            horizontalCnt++;
+        }
+
+        // Count number of left figures
+        for (int i = tile.X - 1; i >= 0; --i)
+        {
+            if (tiles[tile.Y, i] != tile) break;
+
+            horizontalCnt++;
+        }
+
+        // Count number of top figures
+        for (int i = tile.Y - 1; i >= 0; --i)
+        {
+            if (tiles[i, tile.X] != tile) break;
+
+            vertiaclCnt++;
+        }
+
+        // Count number of bottom figures
+        for (int i = tile.Y + 1; i < fieldSize; ++i)
+        {
+            if (tiles[i, tile.X] != tile) break;
+
+            vertiaclCnt++;
+        }
+
+        return horizontalCnt >= 3 || vertiaclCnt >= 3;
+    }    
 }
