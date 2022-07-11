@@ -41,3 +41,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Field Background
+    uniqueID: 2924672831
+    locked: 0
+  - name: Tile Background
+    uniqueID: 3753830689
+    locked: 0
+  - name: Figure
+    uniqueID: 3350206929
+    locked: 0
