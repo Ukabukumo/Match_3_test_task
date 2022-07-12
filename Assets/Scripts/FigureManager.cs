@@ -15,16 +15,15 @@ public class FigureManager : MonoBehaviour
         }
     }
 
-    public Tuple<int, Sprite> GetRandomFigure()
+    public int GetRandomFigure()
     {
-        int ind = UnityEngine.Random.Range(0, figureSprites.Length);
-        Sprite sprite = figureSprites[ind];
+        int type = UnityEngine.Random.Range(0, figureSprites.Length);
 
-        return Tuple.Create(ind, sprite);
+        return type;
     }
 
-    public Sprite GetFigure(int figureInd)
+    public Sprite GetFigure(int figureType)
     {
-        return figureSprites[figureInd];
+        return figureSprites[figureType];
     }
 }
