@@ -17,18 +17,13 @@ public class Field : MonoBehaviour
         tr = GetComponent<Transform>();
     }
 
-    private void Start()
-    {
-        CreateField();
-    }
-
     private void Update()
     {
         RemoveMatches();
         FallTiles();
     }
 
-    private void CreateField()
+    public void CreateField()
     {
         tiles = new Tile[fieldSize, fieldSize];
 
@@ -54,7 +49,13 @@ public class Field : MonoBehaviour
             }
         }
 
-        RemoveMatches();
+        List<Tile> matchedTiles = GetMatchedTiles();
+        while (matchedTiles.Count > 0)
+        {
+            RemoveTiles(matchedTiles);
+            FillTiles();
+            matchedTiles = GetMatchedTiles();
+        }
     }
 
     public List<Tile> GetMatchedTiles()
@@ -113,58 +114,32 @@ public class Field : MonoBehaviour
 
     private void RemoveTiles(List<Tile> matchedTiles)
     {
+        CalculateScore(matchedTiles);
+
         foreach (Tile tile in matchedTiles)
         {
             tile.figure.SetEmpty();
         }
     }
 
-    /*private IEnumerator FallTiles()
+    private void CalculateScore(List<Tile> tiles)
+    {
+        foreach (Tile tile in tiles)
+        {
+            // Value of one tile
+            GameManager.instance.AddScore(GetMatch(tile));
+        }
+    }
+
+    private void FillTiles()
     {
         List<Tile> emptyTiles = GetEmptyTiles();
 
-        bool hasAnimated = false;
-
-        while (emptyTiles.Count > 0 || hasAnimated)
+        foreach (Tile tile in emptyTiles)
         {
-            hasAnimated = false;
-
-            foreach (Tile tile in emptyTiles)
-            {
-                // Top line
-                if (tile.Y == 0)
-                {
-                    Tile tileBelow = tiles[tile.Y + 1, tile.X];
-
-                    if (!tileBelow.figure.IsAnimated)
-                    {
-                        tile.figure.SetType();
-                    }
-                }
-                else
-                {
-                    Tile tileAbove = tiles[tile.Y - 1, tile.X];
-                    if (tileAbove.figure.IsAnimated)
-                    {
-                        hasAnimated = true;
-                        continue;
-                    }
-
-                    if (tileAbove.figure.IsEmpty())
-                    {
-                        continue;
-                    }
-
-                    tile.figure.SetType(tileAbove.figure.Type);
-                    tileAbove.figure.SetEmpty();
-                    tile.figure.MoveDown();
-                }
-            }
-
-            emptyTiles = GetEmptyTiles();
-            yield return null;
+            tile.figure.SetType();
         }
-    }*/
+    }
 
     private void FallTiles()
     {
@@ -182,6 +157,7 @@ public class Field : MonoBehaviour
                     if (!tileBelow.figure.IsAnimated)
                     {
                         tile.figure.SetType();
+                        tile.figure.SpawnFigure();
                     }
                 }
                 else
@@ -204,10 +180,9 @@ public class Field : MonoBehaviour
     public void RemoveMatches()
     {
         List<Tile> matchedTiles = GetMatchedTiles();
-        while (matchedTiles.Count > 0 && !HasAnimatedTiles())
+        while ((matchedTiles.Count > 0) && (GetEmptyTiles().Count == 0) && !HasAnimatedTiles())
         {
             RemoveTiles(matchedTiles);
-            //StartCoroutine(FallTiles());
             matchedTiles = GetMatchedTiles();
         }
     }
@@ -217,8 +192,18 @@ public class Field : MonoBehaviour
         // Empty tile
         if (tile.figure.IsEmpty()) return false;
 
-        int horizontalCnt = 1;
-        int vertiaclCnt = 1;
+        return GetMatch(tile) > 0;
+    }
+
+    public int GetMatch(Tile tile)
+    {
+        int match = 0;
+
+        // Empty tile
+        if (tile.figure.IsEmpty()) return match;
+
+        int horizontalCnt = 0;
+        int verticalCnt = 0;
 
         // Count number of right figures
         for (int i = tile.X + 1; i < fieldSize; ++i)
@@ -241,7 +226,7 @@ public class Field : MonoBehaviour
         {
             if (tiles[i, tile.X].figure != tile.figure) break;
 
-            vertiaclCnt++;
+            verticalCnt++;
         }
 
         // Count number of bottom figures
@@ -249,11 +234,15 @@ public class Field : MonoBehaviour
         {
             if (tiles[i, tile.X].figure != tile.figure) break;
 
-            vertiaclCnt++;
+            verticalCnt++;
         }
 
-        return horizontalCnt >= 3 || vertiaclCnt >= 3;
-    }  
+        if (horizontalCnt >= 2) match += horizontalCnt;
+        if (verticalCnt >= 2) match += verticalCnt;
+        match++;
+
+        return match > 1 ? match : 0;
+    }
     
     public float GetGap()
     {

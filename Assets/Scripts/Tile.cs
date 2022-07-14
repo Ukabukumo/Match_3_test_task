@@ -3,11 +3,19 @@ using System;
 
 public class Tile : MonoBehaviour
 {
-    private const int FIGURE_SCALE = 2;
+    [SerializeField] private Color selected;
+    [SerializeField] private Color unselected;
+    private SpriteRenderer sr;
 
     public Figure figure;
+    public int figureScale = 2;
     public int X { get; private set; }
     public int Y { get; private set; }
+
+    private void Awake()
+    {
+        sr = GetComponent<SpriteRenderer>();
+    }
 
     public void SetValues(int x, int y)
     {
@@ -15,15 +23,28 @@ public class Tile : MonoBehaviour
         Y = y;
 
         figure = Instantiate(figure, transform.position, Quaternion.identity, transform);
-        figure.transform.localScale = figure.transform.localScale * FIGURE_SCALE;
+        figure.transform.localScale = figure.transform.localScale * figureScale;
         figure.SetType();
+    }
+
+    public void SetSelected(bool isSelected)
+    {
+        if (isSelected)
+        {
+            sr.color = selected;
+        }
+
+        else
+        {
+            sr.color = unselected;
+        }
     }
 
     private void OnMouseDown()
     {
-        if (!figure.IsEmpty())
+        if (!figure.IsEmpty() && GameManager.instance.inGame)
         {
-            GameManager.instance.FigureChoosed(GetComponent<Tile>());
+            GameManager.instance.FigureSelected(GetComponent<Tile>());
         }
     }
 }
