@@ -1,6 +1,6 @@
 using UnityEngine;
 using TMPro;
-using System;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI scoreText;
     [SerializeField] TextMeshProUGUI timeText;
     [SerializeField] GameObject gameOverPanel;
+    [SerializeField] GameObject noMatchesPanel;
 
     private void Awake()
     {
@@ -31,5 +32,14 @@ public class UIManager : MonoBehaviour
     public void GameOverPanel(bool flag)
     {
         gameOverPanel.SetActive(flag);
+    }
+
+    public IEnumerator NoMatchesPanel(float duration)
+    {
+        noMatchesPanel.SetActive(true);
+
+        yield return new WaitForSeconds(duration);
+
+        noMatchesPanel.SetActive(false);
     }
 }

@@ -26,4 +26,9 @@ public class FigureManager : MonoBehaviour
     {
         return figureSprites[figureType];
     }
+
+    public int GetFiguresNumber()
+    {
+        return figureSprites.Length;
+    }
 }

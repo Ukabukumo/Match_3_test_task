@@ -21,6 +21,12 @@ public class Field : MonoBehaviour
     {
         RemoveMatches();
         FallTiles();
+        
+        if (!HasPossibleMatches())
+        {
+            StartCoroutine(UIManager.instance.NoMatchesPanel(1.0f));
+            ClearField();
+        }
     }
 
     public void CreateField()
@@ -112,6 +118,46 @@ public class Field : MonoBehaviour
         return false;
     }
 
+    public bool HasPossibleMatches()
+    {
+        if (HasAnimatedTiles() || (GetEmptyTiles().Count > 0)) return true;
+
+        for (int y = 0; y < fieldSize; ++y)
+        {
+            for (int x = 0; x < fieldSize; ++x)
+            {
+                Tile curTile = tiles[y, x];
+                int originType = curTile.figure.Type;
+                List<Tile> possibleTiles = new List<Tile>();
+
+                if (x > 0) possibleTiles.Add(tiles[y, x - 1]);
+                if (x < fieldSize - 1) possibleTiles.Add(tiles[y, x + 1]);
+                if (y > 0) possibleTiles.Add(tiles[y - 1, x]);
+                if (y < fieldSize - 1) possibleTiles.Add(tiles[y + 1, x]);
+
+                foreach (Tile tile in possibleTiles)
+                {
+                    int type = tile.figure.Type;
+                    curTile.figure.SetType(type);
+                    tile.figure.SetEmpty();
+
+                    if (IsMatchedTile(curTile))
+                    {
+                        curTile.figure.SetType(originType);
+                        tile.figure.SetType(type);
+                        return true;
+                    }
+
+                    tile.figure.SetType(type);
+                }
+
+                curTile.figure.SetType(originType);
+            }
+        }
+
+        return false;
+    }
+
     private void RemoveTiles(List<Tile> matchedTiles)
     {
         CalculateScore(matchedTiles);
@@ -119,6 +165,17 @@ public class Field : MonoBehaviour
         foreach (Tile tile in matchedTiles)
         {
             tile.figure.SetEmpty();
+        }
+    }
+
+    private void ClearField()
+    {
+        for (int y = 0; y < fieldSize; ++y)
+        {
+            for (int x = 0; x < fieldSize; ++x)
+            {
+                tiles[y, x].figure.SetEmpty();
+            }
         }
     }
 
